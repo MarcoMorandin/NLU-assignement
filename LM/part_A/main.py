@@ -13,14 +13,16 @@ import math
 import numpy as np
 import logging
 from dataclasses import dataclass
+from itertools import product
+
 
 @dataclass
 class Config:
-    hid_size: int = 200
-    emb_size: int = 300
+    hid_size: int = 400
+    emb_size: int = 400
     lr: float = 0.0001
     clip: float = 5
-    batch_size: int = 64
+    batch_size: int = 128
     eval_batch_size: int = 128
     n_epochs: int = 100
     patience: int = 3
@@ -48,7 +50,6 @@ def get_device(logger):
 def main(point = "3",  config=Config(), logger = None):
     device = get_device(logger)
 
-    
     logger.debug(f"Starting training with configuration: {config}")
     if point == "1":
         logger.debug("Model Variant: LSTM")
@@ -111,9 +112,6 @@ def main(point = "3",  config=Config(), logger = None):
         len(lang.word2id),
         pad_index=lang.word2id["<pad>"]
     )
-    if(torch.cuda.device_count() > 1):
-        logger.debug(f"Using {torch.cuda.device_count()} GPUs")
-        model= nn.DataParallel(model)
     model.to(device)
     model.apply(init_weights)
     
@@ -125,7 +123,6 @@ def main(point = "3",  config=Config(), logger = None):
     criterion = nn.CrossEntropyLoss(ignore_index=lang.word2id["<pad>"])
     
     
-    patience = 3
     losses_train = []
     losses_dev = []
     sampled_epochs = []
@@ -145,11 +142,11 @@ def main(point = "3",  config=Config(), logger = None):
             if  ppl_dev < best_ppl:
                 best_ppl = ppl_dev
                 best_model = copy.deepcopy(model).to('cpu')
-                patience = 3
+                config.patience = 3
             else:
-                patience -= 1
+                config.patience -= 1
                 
-            if patience <= 0:
+            if config.patience <= 0:
                 logger.debug("Early stopping triggered")
                 break
 
@@ -158,92 +155,6 @@ def main(point = "3",  config=Config(), logger = None):
     logger.debug(f"Final Test PPL: {final_ppl:.4f}")
     return final_ppl
 
-def random_search_phase(n_trials, logger):
-    """Phase 1: Initial exploration with random search"""
-    logger.info("Starting Phase 1: Random Search")
-    param_dist = {
-        'lr': lambda: 10 ** np.random.uniform(-4, -1),
-        'hid_size': lambda: np.random.randint(100, 800),
-        'emb_size': lambda: np.random.randint(100, 800),
-        'batch_size': lambda: np.random.choice([8, 16, 32, 64])
-    }
-    
-    results = []
-    for trial in range(n_trials):
-        config = Config(**{k: v() for k, v in param_dist.items()}, n_epochs=20)
-        logger.info(f"Random Search Trial {trial + 1}/{n_trials}: {config}")
-        test_ppl = main(point="3", config=config, logger=logger)
-        results.append((config, test_ppl))
-        logger.info(f"Trial {trial + 1} completed with Test PPL: {test_ppl:.4f}")
-    
-    results.sort(key=lambda x: x[1])
-    best_config, best_ppl = results[0]
-    logger.info(f"Random Search Best Config: {best_config}, PPL: {best_ppl:.4f}")
-    return best_config, results
-
-def grid_search_phase(best_config, logger):
-    """Phase 2: Refinement with grid search"""
-    logger.info("Starting Phase 2: Grid Search")
-    param_grid = {
-        'lr': [best_config.lr * f for f in [0.5, 1.0, 2.0]],
-        'hid_size': [max(100, best_config.hid_size - 100), best_config.hid_size,
-                    min(800, best_config.hid_size + 100)],
-        'emb_size': [max(100, best_config.emb_size - 100), best_config.emb_size,
-                    min(800, best_config.emb_size + 100)],
-        'batch_size': [max(8, best_config.batch_size - 8), best_config.batch_size,
-                      min(64, best_config.batch_size + 8)]
-    }
-    
-    best_ppl = float('inf')
-    best_refined_config = None
-    
-    for params in product(*param_grid.values()):
-        config = Config(**dict(zip(param_grid.keys(), params)), n_epochs=50)
-        logger.info(f"Grid Search Trial: {config}")
-        test_ppl = main(point="3", config=config, logger=logger)
-        logger.info(f"Grid Search Trial completed with Test PPL: {test_ppl:.4f}")
-        
-        if test_ppl < best_ppl:
-            best_ppl = test_ppl
-            best_refined_config = config
-            logger.info(f"New best grid config: {best_refined_config}, PPL: {best_ppl:.4f}")
-    
-    logger.info(f"Grid Search Best Config: {best_refined_config}, PPL: {best_ppl:.4f}")
-    return best_refined_config
-
-def validation_phase(best_config, logger):
-    """Phase 3: Final validation"""
-    logger.info("Starting Phase 3: Final Validation")
-    config = Config(
-        lr=best_config.lr,
-        hid_size=best_config.hid_size,
-        emb_size=best_config.emb_size,
-        batch_size=best_config.batch_size,
-        n_epochs=100
-    )
-    logger.info(f"Validating with final config: {config}")
-    final_ppl = main(point="3", config=config, logger=logger)
-    logger.info(f"Final Validation Test PPL: {final_ppl:.4f}")
-    return config, final_ppl
-
-def practical_workflow():
-    logger = setup_logging()
-    logger.info("Starting Practical Workflow for Hyperparameter Tuning")
-    
-    # Phase 1: Random Search (10 trials)
-    best_random_config, random_results = random_search_phase(n_trials=10, logger=logger)
-    
-    # Phase 2: Grid Search around best random config
-    best_grid_config = grid_search_phase(best_random_config, logger)
-    
-    # Phase 3: Final Validation
-    final_config, final_ppl = validation_phase(best_grid_config, logger)
-    
-    logger.info("Workflow Complete")
-    logger.info(f"Final Best Configuration: {final_config}")
-    logger.info(f"Final Test PPL: {final_ppl:.4f}")
-    
-    return final_config, final_ppl
-
 if __name__ == "__main__":
-    final_config, final_ppl = practical_workflow()
+    logger = setup_logging()
+    main(logger=logger)
