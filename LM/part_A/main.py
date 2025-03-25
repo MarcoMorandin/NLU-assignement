@@ -113,6 +113,7 @@ def main(point = "3",  config=Config()):
         pad_index=lang.word2id["<pad>"]
     )
     if(torch.cuda.device_count() > 1):
+        logger.debug(f"Using {torch.cuda.device_count()} GPUs")
         model= nn.DataParallel(model)
     model.to(device)
     model.apply(init_weights)
