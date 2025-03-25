@@ -208,9 +208,9 @@ if __name__ == "__main__":
     logger = setup_logging()
     parser = argparse.ArgumentParser()
     
-    parser.add_argument('point', type=int,
+    parser.add_argument('point', type=str,
                         help=f"Point to be run. Choose from:\n 1 - LSTM, 2 - LSTM with Dropout, 3 - LSTM with Dropout and AdamW",
-                        default=3)
+                        default="3")
     
     parser.add_argument('path', type=str,
                         help="Path to save the plots and report")
