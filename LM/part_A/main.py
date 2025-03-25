@@ -20,7 +20,7 @@ from itertools import product
 class Config:
     hid_size: int = 400
     emb_size: int = 400
-    lr: float = 0.0001
+    lr: float = 0.0004
     clip: float = 5
     batch_size: int = 128
     eval_batch_size: int = 128
@@ -136,7 +136,7 @@ def main(point = "3",  config=Config(), logger = None):
             losses_train.append(np.asarray(loss).mean())
             ppl_dev, loss_dev = eval_loop(loaders['dev'], criterion, model)
             
-            logger.info(f"Epoch {epoch}: Train Loss: {loss_dev:.4f}, Val PPL: {ppl_dev:.4f}")
+            logger.info(f"\nEpoch {epoch}: Train Loss: {loss_dev:.4f}, Val PPL: {ppl_dev:.4f}")
             losses_dev.append(np.asarray(loss_dev).mean())
 
             if  ppl_dev < best_ppl:
