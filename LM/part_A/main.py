@@ -102,6 +102,7 @@ def main(point = "3",  config=Config()):
             collate_fn=partial(collate_fn, pad_token=lang.word2id["<pad>"], device=device)
         )
     }
+    
 
     model_class = LM_LSTM if point == "1" else LM_LSTM_DROPOUT
     model = model_class(
