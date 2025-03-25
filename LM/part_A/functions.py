@@ -1,7 +1,8 @@
 import torch.nn as nn
 import torch
 import math
-import matplotlib as plt
+import matplotlib.pyplot as plt
+
 
 def train_loop(data, optimizer, criterion, model, clip=5):
     model.train()
