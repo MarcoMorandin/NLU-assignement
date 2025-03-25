@@ -48,6 +48,7 @@ def get_device(logger):
 def main(point = "3",  config=Config()):
     logger = setup_logging()
     device = get_device(logger)
+
     
     logger.debug(f"Starting training with configuration: {config}")
     if point == "1":
@@ -110,7 +111,10 @@ def main(point = "3",  config=Config()):
         config.hid_size,
         len(lang.word2id),
         pad_index=lang.word2id["<pad>"]
-    ).to(device)
+    )
+    if(torch.cuda.device_count() > 1):
+        model= nn.DataParallel(model)
+    model.to(device)
     model.apply(init_weights)
     
     if point in ["1", "2"]:
