@@ -75,6 +75,9 @@ def report(best_model, epochs, loss_train, loss_dev, perplexity_list, final_ppl,
         "lr": Config.lr,
         "hidden_size": Config.hid_size,
         "emb_size": Config.emb_size,
+        "clip": Config.clip,
+        "batch_size": Config.batch_size,
+        "eval_batch_size": Config.eval_batch_size,
         "point": point,
         "final_ppl": final_ppl
     }
