@@ -14,6 +14,7 @@ import numpy as np
 import logging
 from dataclasses import dataclass
 from itertools import product
+import json
 
 
 @dataclass
@@ -47,9 +48,46 @@ def get_device(logger):
     logger.debug("CUDA is not available. Using CPU")
     return torch.device("cpu")
 
-def main(point = "3",  config=Config(), logger = None):
-    device = get_device(logger)
+def report(best_model, epochs, loss_train, loss_dev, perplexity_list, final_ppl, point, path):
+    generate_plot(
+        epochs=epochs,
+        data=[loss_train, loss_dev],
+        labels=['Training Loss', 'Validation Loss'],
+        title='Training and Validation Loss',
+        xlabel='Epochs',
+        ylabel='Loss',
+        filename=os.path.join(path, 'loss_plot.png')
+    )
 
+    generate_plot(
+        epochs=epochs,
+        data=[perplexity_list],
+        labels=['Validation Perplexity'],
+        title='Validation Perplexity',
+        xlabel='Epochs',
+        ylabel='Perplexity',
+        filename=os.path.join(path, 'ppl_plot.png')
+    )
+    
+    report_data = {
+        "epochs_used": epochs,
+        "number_epochs": len(epochs),
+        "lr": Config.lr,
+        "hidden_size": Config.hid_size,
+        "emb_size": Config.emb_size,
+        "point": point,
+        "final_ppl": final_ppl
+    }
+    
+    with open(os.path.join(path, 'report.json'), "w") as file:
+        json.dump(report_data, file, indent=4)
+    
+    torch.save(best_model.state_dict(), os.path.join(path, "model.pt"))
+
+
+def main(point = "3",  config=Config(), logger = None, report_path = './report'):
+    device = get_device(logger)
+    
     logger.debug(f"Starting training with configuration: {config}")
     if point == "1":
         logger.info("Model Variant: LSTM")
@@ -106,12 +144,14 @@ def main(point = "3",  config=Config(), logger = None):
     
 
     model_class = LM_LSTM if point == "1" else LM_LSTM_DROPOUT
+    
     model = model_class(
         config.emb_size,
         config.hid_size,
         len(lang.word2id),
         pad_index=lang.word2id["<pad>"]
     )
+    
     model.to(device)
     model.apply(init_weights)
     
@@ -127,6 +167,7 @@ def main(point = "3",  config=Config(), logger = None):
     losses_train = []
     losses_dev = []
     sampled_epochs = []
+    ppl_dev_list = []
     best_ppl = math.inf
     best_model = None
     
@@ -135,7 +176,9 @@ def main(point = "3",  config=Config(), logger = None):
         if epoch % 1 == 0:
             sampled_epochs.append(epoch)
             losses_train.append(np.asarray(loss).mean())
+            
             ppl_dev, loss_dev = eval_loop(loaders['dev'], criterion_eval, model)
+            ppl_dev_list.append(ppl_dev)
             
             logger.info(f"\nEpoch {epoch}: Train Loss: {loss_dev:.4f}, Val PPL: {ppl_dev:.4f}")
             losses_dev.append(np.asarray(loss_dev).mean())
@@ -154,8 +197,24 @@ def main(point = "3",  config=Config(), logger = None):
     best_model.to(device)
     final_ppl,  _ = eval_loop(loaders['test'], criterion_eval, best_model)    
     logger.info(f"Final Test PPL: {final_ppl:.4f}")
-    return final_ppl
+    
+    report(best_model, sampled_epochs, losses_train, losses_dev, ppl_dev_list, final_ppl, point, report_path)
 
 if __name__ == "__main__":
+    import argparse
     logger = setup_logging()
-    main(logger=logger)
+    parser = argparse.ArgumentParser()
+    
+    parser.add_argument('point', type=int,
+                        help=f"Point to be run. Choose from:\n 1 - LSTM, 2 - LSTM with Dropout, 3 - LSTM with Dropout and AdamW",
+                        default=3)
+    
+    parser.add_argument('path', type=str,
+                        help="Path to save the plots and report")
+    
+    args = parser.parse_args()
+    
+    if not os.path.exists(args.path):
+        os.makedirs(args.path)
+    
+    main(point=args.point, logger=logger, report_path=args.path)

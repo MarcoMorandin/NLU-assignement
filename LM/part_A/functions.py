@@ -1,6 +1,7 @@
 import torch.nn as nn
 import torch
 import math
+import matplotlib as plt
 
 def train_loop(data, optimizer, criterion, model, clip=5):
     model.train()
@@ -53,4 +54,18 @@ def init_weights(mat):
             if type(m) in [nn.Linear]:
                 torch.nn.init.uniform_(m.weight, -0.01, 0.01)
                 if m.bias != None:
-                    m.bias.data.fill_(0.01)
+                    m.bias.data.fill_(0.01)     
+                    
+
+def generate_plot(epochs, data, labels, title, xlabel, ylabel, filename):
+    plt.figure(figsize=(10, 6))
+    for d, label in zip(data, labels):
+        plt.plot(epochs, d, label=label, marker='o')
+    plt.title(title)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig(filename)
+    plt.close()
