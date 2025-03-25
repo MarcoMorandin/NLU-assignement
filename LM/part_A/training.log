@@ -1,0 +1,10 @@
+2025-03-25 13:26:29,937 - INFO - Using device: mps
+2025-03-25 13:27:33,480 - INFO - Using device: mps
+2025-03-25 13:27:51,170 - INFO - Using device: mps
+2025-03-25 13:28:12,606 - INFO - Using device: cpu
+2025-03-25 13:35:05,499 - INFO - CUDA is not available. Using CPU
+2025-03-25 13:35:05,500 - INFO - Starting training with configuration: Config(hid_size=400, emb_size=400, lr=0.0001, clip=5, batch_size=10, eval_batch_size=128, n_epochs=100, patience=3)
+2025-03-25 13:35:05,500 - INFO - Model Variant: LSTM with Dropout and AdamW
+2025-03-25 13:35:05,500 - INFO - Found train data at: /Users/marcomorandin/Desktop/NLU/NLU-2025-Labs/exam/studentID_name_surname/LM/part_A/dataset/PennTreeBank/ptb.train.txt
+2025-03-25 13:35:05,500 - INFO - Found dev data at: /Users/marcomorandin/Desktop/NLU/NLU-2025-Labs/exam/studentID_name_surname/LM/part_A/dataset/PennTreeBank/ptb.valid.txt
+2025-03-25 13:35:05,500 - INFO - Found test data at: /Users/marcomorandin/Desktop/NLU/NLU-2025-Labs/exam/studentID_name_surname/LM/part_A/dataset/PennTreeBank/ptb.test.txt
