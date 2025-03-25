@@ -1,0 +1,14 @@
+{
+    "epochs_used": [
+        0
+    ],
+    "number_epochs": 1,
+    "lr": 0.0008,
+    "hidden_size": 300,
+    "emb_size": 400,
+    "clip": 5,
+    "batch_size": 128,
+    "eval_batch_size": 128,
+    "point": "3",
+    "final_ppl": 343.46083408967456
+}
