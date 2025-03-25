@@ -25,7 +25,7 @@ class Config:
     clip: float = 5
     batch_size: int = 128
     eval_batch_size: int = 128
-    n_epochs: int = 1
+    n_epochs: int = 100
     patience: int = 3
 
 def setup_logging():
