@@ -18,8 +18,8 @@ from itertools import product
 
 @dataclass
 class Config:
-    hid_size: int = 200
-    emb_size: int = 300
+    hid_size: int = 300
+    emb_size: int = 400
     lr: float = 0.0008
     clip: float = 5
     batch_size: int = 128
