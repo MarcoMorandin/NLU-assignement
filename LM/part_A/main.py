@@ -120,8 +120,9 @@ def main(point = "3",  config=Config(), logger = None):
     else:
         optimizer = optim.AdamW(model.parameters(), lr=config.lr)
         
-    criterion = nn.CrossEntropyLoss(ignore_index=lang.word2id["<pad>"])
-    
+    criterion_train = nn.CrossEntropyLoss(ignore_index=lang.word2id["<pad>"])
+    criterion_eval = nn.CrossEntropyLoss(ignore_index=lang.word2id["<pad>"], reduction='sum')
+
     
     losses_train = []
     losses_dev = []
@@ -130,11 +131,11 @@ def main(point = "3",  config=Config(), logger = None):
     best_model = None
     
     for epoch in tqdm(range(config.n_epochs), desc="Training"):
-        loss = train_loop(loaders['train'], optimizer, criterion, model, config.clip)    
+        loss = train_loop(loaders['train'], optimizer, criterion_train, model, config.clip)    
         if epoch % 1 == 0:
             sampled_epochs.append(epoch)
             losses_train.append(np.asarray(loss).mean())
-            ppl_dev, loss_dev = eval_loop(loaders['dev'], criterion, model)
+            ppl_dev, loss_dev = eval_loop(loaders['dev'], criterion_eval, model)
             
             logger.info(f"\nEpoch {epoch}: Train Loss: {loss_dev:.4f}, Val PPL: {ppl_dev:.4f}")
             losses_dev.append(np.asarray(loss_dev).mean())
@@ -151,7 +152,7 @@ def main(point = "3",  config=Config(), logger = None):
                 break
 
     best_model.to(device)
-    final_ppl,  _ = eval_loop(loaders['test'], criterion, best_model)    
+    final_ppl,  _ = eval_loop(loaders['test'], criterion_eval, best_model)    
     logger.info(f"Final Test PPL: {final_ppl:.4f}")
     return final_ppl
 
