@@ -52,11 +52,11 @@ def main(point = "3",  config=Config(), logger = None):
 
     logger.debug(f"Starting training with configuration: {config}")
     if point == "1":
-        logger.debug("Model Variant: LSTM")
+        logger.info("Model Variant: LSTM")
     elif point == "2":
-        logger.debug("Model Variant: LSTM with Dropout")
+        logger.info("Model Variant: LSTM with Dropout")
     elif point == "3":
-        logger.debug("Model Variant: LSTM with Dropout and AdamW")
+        logger.info("Model Variant: LSTM with Dropout and AdamW")
     else:
         logger.error("Invalid Variant!")
         return
@@ -136,7 +136,7 @@ def main(point = "3",  config=Config(), logger = None):
             losses_train.append(np.asarray(loss).mean())
             ppl_dev, loss_dev = eval_loop(loaders['dev'], criterion, model)
             
-            logger.debug(f"Epoch {epoch}: Train Loss: {loss_dev:.4f}, Val PPL: {ppl_dev:.4f}")
+            logger.info(f"Epoch {epoch}: Train Loss: {loss_dev:.4f}, Val PPL: {ppl_dev:.4f}")
             losses_dev.append(np.asarray(loss_dev).mean())
 
             if  ppl_dev < best_ppl:
@@ -147,12 +147,12 @@ def main(point = "3",  config=Config(), logger = None):
                 config.patience -= 1
                 
             if config.patience <= 0:
-                logger.debug("Early stopping triggered")
+                logger.info("Early stopping triggered")
                 break
 
     best_model.to(device)
     final_ppl,  _ = eval_loop(loaders['test'], criterion, best_model)    
-    logger.debug(f"Final Test PPL: {final_ppl:.4f}")
+    logger.info(f"Final Test PPL: {final_ppl:.4f}")
     return final_ppl
 
 if __name__ == "__main__":
