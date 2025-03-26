@@ -19,8 +19,8 @@ import json
 
 @dataclass
 class Config:
-    hid_size: int = 300
-    emb_size: int = 400
+    hid_size: int = 500
+    emb_size: int = 500
     lr: float = 0.0008
     clip: float = 5
     batch_size: int = 128
@@ -29,16 +29,16 @@ class Config:
     patience: int = 3
 
 #Point 2
-@dataclass
-class Config:
-    hid_size: int = 200
-    emb_size: int = 300
-    lr: float = 0.0008
-    clip: float = 5
-    batch_size: int = 128
-    eval_batch_size: int = 128
-    n_epochs: int = 100
-    patience: int = 3
+# @dataclass
+# class Config:
+#     hid_size: int = 200
+#     emb_size: int = 300
+#     lr: float = 0.0008
+#     clip: float = 5
+#     batch_size: int = 128
+#     eval_batch_size: int = 128
+#     n_epochs: int = 100
+#     patience: int = 3
 
 # Point 3
 # @dataclass   
