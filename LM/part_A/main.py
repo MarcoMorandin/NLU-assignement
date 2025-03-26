@@ -16,7 +16,6 @@ from dataclasses import dataclass
 from itertools import product
 import json
 
-#Point 2
 @dataclass
 class Config:
     hid_size: int = 400
