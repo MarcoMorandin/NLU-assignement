@@ -19,8 +19,8 @@ import json
 
 @dataclass
 class Config:
-    hid_size: int = 500
-    emb_size: int = 500
+    hid_size: int = 100
+    emb_size: int = 100
     lr: float = 0.0008
     clip: float = 5
     batch_size: int = 128
