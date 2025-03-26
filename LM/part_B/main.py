@@ -82,7 +82,7 @@ def main(point = "3",  config=Config(), logger = None, report_path = './report')
         )
     }
     
-    model_class = LM_LSTM_WT if point == "1" else LM_LSTM_VD
+    model_class = LM_LSTM_WT
     
     model = model_class(
         config.emb_size,
