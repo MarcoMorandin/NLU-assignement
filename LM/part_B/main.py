@@ -19,7 +19,7 @@ import json
 class Config:
     hid_size: int = 500
     emb_size: int = 500
-    lr: float = 3
+    lr: float = 8
     clip: float = 5
     batch_size: int = 128
     eval_batch_size: int = 128
