@@ -13,7 +13,7 @@ class LM_LSTM_WT(nn.Module):
         self.output = nn.Linear(emb_size, output_size)
         
         # Weight tying: output.weight = embedding.weight^T (requires transpose)
-        self.output.weight = nn.Parameter(self.embedding.weight.data.clone().T)  # Transpose to match shapes
+        self.output.weight = nn.Parameter(self.embedding.weight)  # Proper weight tying
 
     def forward(self, input_sequence):
         emb = self.embedding(input_sequence)
