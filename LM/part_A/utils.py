@@ -1,5 +1,6 @@
 import torch.utils.data as data
 import torch
+import logging
 
 def read_file(path, eos_token="<eos>"):
     output = []
@@ -87,3 +88,23 @@ class Lang():
                     output[w] = i
                     i += 1
         return output
+
+def setup_logging():
+    logger = logging.getLogger('LM')
+    logger.setLevel(logging.INFO)
+
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.INFO)
+    
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    ch.setFormatter(formatter)
+    
+    logger.addHandler(ch)
+    return logger
+
+def get_device(logger):
+    if torch.cuda.is_available():
+        logger.debug("CUDA is available. Using GPU")
+        return torch.device("cuda")
+    logger.debug("CUDA is not available. Using CPU")
+    return torch.device("cpu")

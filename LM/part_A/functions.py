@@ -2,7 +2,8 @@ import torch.nn as nn
 import torch
 import math
 import matplotlib.pyplot as plt
-
+import os
+import json
 
 def train_loop(data, optimizer, criterion, model, clip=5):
     model.train()
@@ -70,3 +71,41 @@ def generate_plot(epochs, data, labels, title, xlabel, ylabel, filename):
     plt.tight_layout()
     plt.savefig(filename)
     plt.close()
+
+def report(best_model, epochs, loss_train, loss_dev, perplexity_list, final_ppl, point, Config, path):
+    generate_plot(
+        epochs=epochs,
+        data=[loss_train, loss_dev],
+        labels=['Training Loss', 'Validation Loss'],
+        title='Training and Validation Loss',
+        xlabel='Epochs',
+        ylabel='Loss',
+        filename=os.path.join(path, 'loss_plot.png')
+    )
+
+    generate_plot(
+        epochs=epochs,
+        data=[perplexity_list],
+        labels=['Validation Perplexity'],
+        title='Validation Perplexity',
+        xlabel='Epochs',
+        ylabel='Perplexity',
+        filename=os.path.join(path, 'ppl_plot.png')
+    )
+    
+    report_data = {
+        "number_epochs": len(epochs),
+        "lr": Config.lr,
+        "hidden_size": Config.hid_size,
+        "emb_size": Config.emb_size,
+        "clip": Config.clip,
+        "batch_size": Config.batch_size,
+        "eval_batch_size": Config.eval_batch_size,
+        "point": point,
+        "final_ppl": final_ppl
+    }
+    
+    with open(os.path.join(path, 'report.json'), "w") as file:
+        json.dump(report_data, file, indent=4)
+    
+    torch.save(best_model.state_dict(), os.path.join(path, "model.pt"))

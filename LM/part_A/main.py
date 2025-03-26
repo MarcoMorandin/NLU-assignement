@@ -11,7 +11,6 @@ from tqdm import tqdm
 import copy
 import math
 import numpy as np
-import logging
 from dataclasses import dataclass
 from itertools import product
 import json
@@ -28,65 +27,6 @@ class Config:
     patience: int = 3
 
 
-def setup_logging():
-    logger = logging.getLogger('LM')
-    logger.setLevel(logging.INFO)
-
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.INFO)
-    
-    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-    ch.setFormatter(formatter)
-    
-    logger.addHandler(ch)
-    return logger
-
-def get_device(logger):
-    if torch.cuda.is_available():
-        logger.debug("CUDA is available. Using GPU")
-        return torch.device("cuda")
-    logger.debug("CUDA is not available. Using CPU")
-    return torch.device("cpu")
-
-def report(best_model, epochs, loss_train, loss_dev, perplexity_list, final_ppl, point, path):
-    generate_plot(
-        epochs=epochs,
-        data=[loss_train, loss_dev],
-        labels=['Training Loss', 'Validation Loss'],
-        title='Training and Validation Loss',
-        xlabel='Epochs',
-        ylabel='Loss',
-        filename=os.path.join(path, 'loss_plot.png')
-    )
-
-    generate_plot(
-        epochs=epochs,
-        data=[perplexity_list],
-        labels=['Validation Perplexity'],
-        title='Validation Perplexity',
-        xlabel='Epochs',
-        ylabel='Perplexity',
-        filename=os.path.join(path, 'ppl_plot.png')
-    )
-    
-    report_data = {
-        "number_epochs": len(epochs),
-        "lr": Config.lr,
-        "hidden_size": Config.hid_size,
-        "emb_size": Config.emb_size,
-        "clip": Config.clip,
-        "batch_size": Config.batch_size,
-        "eval_batch_size": Config.eval_batch_size,
-        "point": point,
-        "final_ppl": final_ppl
-    }
-    
-    with open(os.path.join(path, 'report.json'), "w") as file:
-        json.dump(report_data, file, indent=4)
-    
-    torch.save(best_model.state_dict(), os.path.join(path, "model.pt"))
-
-
 def main(point = "3",  config=Config(), logger = None, report_path = './report'):
     device = get_device(logger)
     
@@ -101,7 +41,6 @@ def main(point = "3",  config=Config(), logger = None, report_path = './report')
         logger.error("Invalid Variant!")
         return
     
-    # Data loading
     cwd = os.getcwd()
     data_paths = {
         'train': f"{cwd}/dataset/PennTreeBank/ptb.train.txt",
@@ -115,7 +54,6 @@ def main(point = "3",  config=Config(), logger = None, report_path = './report')
             return
         logger.debug(f"Found {split} data at: {path}")
 
-    # Dataset preparation
     train_data = read_file(data_paths['train'])
     lang = Lang(train_data, ["<pad>", "<eos>"])
     
@@ -144,7 +82,6 @@ def main(point = "3",  config=Config(), logger = None, report_path = './report')
         )
     }
     
-
     model_class = LM_LSTM if point == "1" else LM_LSTM_DROPOUT
     
     model = model_class(
@@ -200,7 +137,8 @@ def main(point = "3",  config=Config(), logger = None, report_path = './report')
     final_ppl,  _ = eval_loop(loaders['test'], criterion_eval, best_model)    
     logger.info(f"Final Test PPL: {final_ppl:.4f}")
     
-    report(best_model, sampled_epochs, losses_train, losses_dev, ppl_dev_list, final_ppl, point, report_path)
+    report(best_model, sampled_epochs, losses_train, losses_dev, ppl_dev_list, final_ppl, point, config, report_path)
+
 
 if __name__ == "__main__":
     import argparse
