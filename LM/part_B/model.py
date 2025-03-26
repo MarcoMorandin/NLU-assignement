@@ -21,6 +21,7 @@ class LM_LSTM_WT(nn.Module):
 class LM_LSTM_VD(nn.Module):
     def __init__(self, emb_size, hidden_size, output_size, pad_index=0, out_dropout=0.1, emb_dropout=0.1, n_layers=1):
         super(LM_LSTM_VD, self).__init__()
+        print("hello")
 
     def forward(self, input_sequence):
-    
+        print("hello")
