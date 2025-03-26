@@ -94,10 +94,7 @@ def main(point = "3",  config=Config(), logger = None, report_path = './report')
     model.to(device)
     model.apply(init_weights)
     
-    if point in ["1", "2"]:
-        optimizer = optim.SGD(model.parameters(), lr=config.lr)
-    else:
-        optimizer = AvSGD(model.parameters(), lr=config.lr)
+    optimizer = optim.SGD(model.parameters(), lr=config.lr)
         
     criterion_train = nn.CrossEntropyLoss(ignore_index=lang.word2id["<pad>"])
     criterion_eval = nn.CrossEntropyLoss(ignore_index=lang.word2id["<pad>"], reduction='sum')
