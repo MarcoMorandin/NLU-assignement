@@ -70,7 +70,6 @@ def report(best_model, epochs, loss_train, loss_dev, perplexity_list, final_ppl,
     )
     
     report_data = {
-        "epochs_used": epochs,
         "number_epochs": len(epochs),
         "lr": Config.lr,
         "hidden_size": Config.hid_size,
