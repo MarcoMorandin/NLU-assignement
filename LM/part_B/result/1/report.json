@@ -1,0 +1,11 @@
+{
+    "number_epochs": 6,
+    "lr": 8,
+    "hidden_size": 1000,
+    "emb_size": 1000,
+    "clip": 5,
+    "batch_size": 128,
+    "eval_batch_size": 128,
+    "point": "1",
+    "final_ppl": 136.9832538606702
+}

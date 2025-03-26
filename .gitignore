@@ -9,3 +9,4 @@ env/
 # Other common ignores
 *.log
 *.DS_Store  # For macOS users
+*.pt
