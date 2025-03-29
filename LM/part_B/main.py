@@ -17,9 +17,9 @@ import json
 
 @dataclass
 class Config:
-    hid_size: int = 700
-    emb_size: int = 700
-    lr: float = 8
+    hid_size: int = 500
+    emb_size: int = 500
+    lr: float = 2
     clip: float = 5
     batch_size: int = 128
     eval_batch_size: int = 128
@@ -143,7 +143,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     
     parser.add_argument('point', type=str,
-                        help=f"Point to be run. Choose from:\n 1 - LSTM, 2 - LSTM with Dropout, 3 - LSTM with Dropout and AdamW",
+                        help=f"Point to be run. Choose from:\n 1 - LSTM with weight tying, 2 - LSTM with Variational Dropout, 3 - LSTM",
                         default="3")
     
     parser.add_argument('path', type=str,
